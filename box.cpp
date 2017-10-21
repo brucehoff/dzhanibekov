@@ -283,7 +283,7 @@ static void idle (void)
     twant = t + dt;
     do {
       ifail = 1;
-      ut_ (f, &twant, &t, w1, dwdt, ymax, &ifail);
+      ut_ (f, &twant, &t, w1, dwdt, ymax, work, &ifail);
     } while (ifail == 2 || ifail == 3 || ifail == 4);
     if (ifail != 0)
       error ("ut() failed, ifail = %d", ifail);
@@ -352,7 +352,7 @@ static void idle (void)
   twant = t + dt;
   do {
     ifail = 1;
-    rksuite.ut(f, &twant, &t, y, dydt, ymax, &ifail);
+    rksuite.ut(f, &twant, &t, y, dydt, ymax, work, &ifail);
   } while (ifail == 3 || ifail == 4);
   if (ifail != 0)
     error ("ut() failed, ifail = %d", ifail);
