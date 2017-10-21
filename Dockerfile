@@ -1,5 +1,9 @@
 FROM lapidarioz/docker-cpp-opencv3-glut
 
+# we will redirect output
+RUN apt-get update && apt-get install -y xvfb
+
+
 # Build the RK (Runge-Kutta) suite
 WORKDIR /
 RUN wget http://www.netlib.org/ode/rksuite/rksuitec++.zip && unzip rksuitec++.zip
@@ -13,4 +17,5 @@ RUN cp rksuite.h /usr/include
 COPY . /usr/src/box
 WORKDIR /usr/src/box
 RUN gcc -o box box.cpp -DUNIX -O2 -w -Wall -s -lglut -lGLU -lGL -L/usr/X11R6/lib -lXi -lXmu -lX11 -lm -lrksuite -lstdc++ 
-CMD ["./box"]
+
+CMD ./entrypoint.sh

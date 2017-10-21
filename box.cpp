@@ -485,7 +485,7 @@ int main (int argc, char *argv[])
   compile_display_lists ();
 
   /* handle glut events forever */
-  glutMainLoop ();
+  glutMainLoop();
 
   return EXIT_SUCCESS;
 }
