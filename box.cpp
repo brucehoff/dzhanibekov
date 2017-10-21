@@ -250,7 +250,7 @@ static void compile_display_lists (void)
 
 #ifdef OLD
 /**********************************************************************/
-static void f (double *t, double *y, double *yp)
+static void f (double t, double *y, double *yp)
 {
   yp[X] = -(I[Z] - I[Y]) * y[Y] * y[Z] / I[X];
   yp[Y] = -(I[X] - I[Z]) * y[Z] * y[X] / I[Y];
@@ -283,7 +283,7 @@ static void idle (void)
     twant = t + dt;
     do {
       ifail = 1;
-      ut_ (f, &twant, &t, w1, dwdt, ymax, work, &ifail);
+      rksuite.ut(&f, twant, t, w1, dwdt, ymax, ifail);
     } while (ifail == 2 || ifail == 3 || ifail == 4);
     if (ifail != 0)
       error ("ut() failed, ifail = %d", ifail);
@@ -316,7 +316,7 @@ static void idle (void)
 /**********************************************************************/
 #else
 /**********************************************************************/
-static void f (double *t, double *y, double *yp)
+static void f (double t, double *y, double *yp)
 {
 /*
         [0]  [1]  [2]  [3]   [4]     [5]
@@ -352,7 +352,7 @@ static void idle (void)
   twant = t + dt;
   do {
     ifail = 1;
-    rksuite.ut(f, &twant, &t, y, dydt, ymax, work, &ifail);
+    rksuite.ut(&f, twant, t, y, dydt, ymax, ifail);
   } while (ifail == 3 || ifail == 4);
   if (ifail != 0)
     error ("ut() failed, ifail = %d", ifail);
@@ -436,11 +436,9 @@ int main (int argc, char *argv[])
   lenwrk = NEQ * 32;
   ifail = 0;
 #ifdef OLD
-  rksuite.setup(&neq, &t, w0, &tend, &tol, thres, &method, &task, &erras,
-	   &hstart, work, &lenwrk, &ifail);
+  rksuite.setup(neq, t, w0, tend, tol, thres, method, &task, (bool)erras, hstart, (bool)ifail);
 #else
-  rksuite.setup(&neq, &t, y, &tend, &tol, thres, &method, &task, &erras,
-	   &hstart, work, &lenwrk, &ifail);
+  rksuite.setup(neq, t, y, tend, tol, thres, method, &task, (bool)erras, hstart, (bool)ifail);
 #endif
 
 #ifdef SAVEFILES
