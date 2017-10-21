@@ -1,7 +1,9 @@
 FROM lapidarioz/docker-cpp-opencv3-glut
 
 # we will redirect output
-RUN apt-get update && apt-get install -y xvfb
+RUN apt-get update && apt-get install -y xvfb 
+# RUN yes 1 | apt-get install -y xorg
+RUN apt-get install -y openbox
 
 
 # Build the RK (Runge-Kutta) suite

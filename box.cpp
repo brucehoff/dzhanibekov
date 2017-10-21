@@ -286,7 +286,7 @@ static void idle (void)
       rksuite.ut(&f, twant, t, w1, dwdt, ymax, ifail);
     } while (ifail == 2 || ifail == 3 || ifail == 4);
     if (ifail != 0)
-      error ("ut() failed, ifail = %d", ifail);
+      error ("OLD ut() failed, ifail = %d", ifail);
     w[i][X] = 0.5 * (w0[X] + w1[X]);
     w[i][Y] = 0.5 * (w0[Y] + w1[Y]);
     w[i][Z] = 0.5 * (w0[Z] + w1[Z]);
@@ -353,8 +353,15 @@ static void idle (void)
   do {
     ifail = 1;
     rksuite.ut(&f, twant, t, y, dydt, ymax, ifail);
-  } while (ifail == 3 || ifail == 4);
-  if (ifail != 0)
+  } while (ifail!=1 && ifail != 6 && ifail != 911);
+  /*
+   *
+   * uflag - OUT status, (1 - success, 2 - inefficient usage, 3 - work intensive,
+        4 - problem probably stiff, 5 - too much accuracy requested, 6 - global error
+        assessment unreliable beyond this point, 911 - catastrophic failure reported on
+        stdout..
+   */
+  if (ifail == 6 || ifail==911)
     error ("ut() failed, ifail = %d", ifail);
 
   c1 = I[X] * y[0] * y[0] + I[Y] * y[1] * y[1] + I[Z] * y[2] * y[2];
