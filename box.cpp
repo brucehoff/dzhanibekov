@@ -1,8 +1,8 @@
 /*
 
-gcc -o box box.c -DUNIX -O2 -Wall -s -lglut -lGLU -lGL -L/usr/X11R6/lib -lXi -lXmu -lX11 -lnag -lg2c -lm
+Adopted from:
 
-gcc -o box box.c -DOLD -DUNIX -O2 -Wall -s -lglut -lGLU -lGL -L/usr/X11R6/lib -lXi -lXmu -lX11 -lnag /usr/lib64/libg2c.so.0 -lm
+http://homepages.paradise.n­et.nz/tmcgavin/box.c
 
 */
 
@@ -55,23 +55,14 @@ typedef GLdouble vec2[2];
 typedef GLdouble vec3[3];
 typedef GLdouble vec6[6];
 
-#ifdef OLD
-#define NEQ 3
-#else
 #define NEQ 6
-#endif
 
 /**********************************************************************/
 static int winWidth, winHeight;
 static GLdouble zNear = 1.0, zFar = 10.0, scale = 0.6;
 static GLuint displayListBase;
 static vec3 box, I;
-#ifdef OLD
-static GLdouble rotationMatrix[16];
-static vec3 w0, w1;
-#else
 static vec6 y;
-#endif
 static GLdouble mass, t, work[NEQ*32];
 static struct timeval tv0;
 
@@ -116,22 +107,13 @@ static void display (void)
   /* draw axis of rotation */
   glBegin (GL_LINES);
   glColor3d (0.0, 0.0, 0.0);
-#ifdef OLD
-  glVertex3d (10.0 * w1[X], 10.0 * w1[Y], 10.0 * w1[Z]);
-  glVertex3d (-10.0 * w1[X], -10.0 * w1[Y], -10.0 * w1[Z]);
-#else
   glVertex3d (10.0 * y[0], 10.0 * y[1], 10.0 * y[2]);
   glVertex3d (-10.0 * y[0], -10.0 * y[1], -10.0 * y[2]);
-#endif
   glEnd();
 
-#ifdef OLD
-  glMultMatrixd (rotationMatrix);
-#else
   glRotated (y[3] * (180.0 / M_PI), 0.0, 0.0, 1.0); /* phi around Z */
   glRotated (y[4] * (180.0 / M_PI), 1.0, 0.0, 0.0); /* theta around X */
   glRotated (y[5] * (180.0 / M_PI), 0.0, 0.0, 1.0); /* psi around Z */
-#endif
 
   glScaled (scale, scale, scale);
   glCallList (displayListBase + 1); /* draw wire frame and axes */
@@ -144,7 +126,7 @@ static void display (void)
 #ifdef SAVEFILES
   if (t > 2300.0 && t < 2500.0) {
     char filename[255];
-    sprintf (filename, "frames/x_%f.png", t);
+    sprintf (filename, "/frames/x_%f.png", t);
     save_snapshot (filename, winWidth, winHeight);
   }
 #endif
@@ -248,73 +230,7 @@ static void compile_display_lists (void)
 
 /**********************************************************************/
 
-#ifdef OLD
-/**********************************************************************/
-static void f (double t, double *y, double *yp)
-{
-  yp[X] = -(I[Z] - I[Y]) * y[Y] * y[Z] / I[X];
-  yp[Y] = -(I[X] - I[Z]) * y[Z] * y[X] / I[Y];
-  yp[Z] = -(I[Y] - I[X]) * y[X] * y[Y] / I[Z];
-}
 
-/**********************************************************************/
-static void idle (void)
-{
-  GLdouble twant, dt, c1, c2, d;
-  int ifail, i;
-  vec3 dwdt, w[1000];
-  struct timeval tv1, dtv;
-  static vec3 ymax;
-
-#ifdef SAVEFILES
-  dt = 0.1;
-#else
-  gettimeofday (&tv1, NULL);
-  timersub (&tv1, &tv0, &dtv);
-  dt = 0.00001 * dtv.tv_usec;
-  tv0 = tv1;
-#endif
-
-  glMatrixMode (GL_MODELVIEW);
-  glLoadIdentity ();
-
-  dt /= 10.0;
-  for (i = 0; i < 10; i++) {
-    twant = t + dt;
-    do {
-      ifail = 1;
-      rksuite.ut(&f, twant, t, w1, dwdt, ymax, ifail);
-    } while (ifail == 2 || ifail == 3 || ifail == 4);
-    if (ifail != 0)
-      error ("OLD ut() failed, ifail = %d", ifail);
-    w[i][X] = 0.5 * (w0[X] + w1[X]);
-    w[i][Y] = 0.5 * (w0[Y] + w1[Y]);
-    w[i][Z] = 0.5 * (w0[Z] + w1[Z]);
-    w0[X] = w1[X];
-    w0[Y] = w1[Y];
-    w0[Z] = w1[Z];
-  }
-
-  for (i = 9; i >= 0; --i) {
-    d = sqrt(w[i][X] * w[i][X] + w[i][Y] * w[i][Y] + w[i][Z] * w[i][Z]);
-    glRotated (dt * (180.0 / M_PI) * d, w[i][X], w[i][Y], w[i][Z]);
-  }
-
-  glMultMatrixd (rotationMatrix);
-  glGetDoublev (GL_MODELVIEW_MATRIX, rotationMatrix);
-
-  c1 = I[X] * w1[X] * w1[X] + I[Y] * w1[Y] * w1[Y] + I[Z] * w1[Z] * w1[Z];
-  c2 = I[X] * I[X] * w1[X] * w1[X] +
-    I[Y] * I[Y] * w1[Y] * w1[Y] +
-    I[Z] * I[Z] * w1[Z] * w1[Z];
-
-  printf ("%f (%17.11e %17.15f %17.11e) %f %f\n", t, w1[X], w1[Y], w1[Z], c1, c2);
-
-  display ();
-}
-
-/**********************************************************************/
-#else
 /**********************************************************************/
 static void f (double t, double *y, double *yp)
 {
@@ -345,7 +261,7 @@ static void idle (void)
 #else
   gettimeofday (&tv1, NULL);
   timersub (&tv1, &tv0, &dtv);
-  dt = 100.0 * 0.000001 * dtv.tv_usec;
+  dt = 100.0 * 0.00000001 * dtv.tv_usec;
   tv0 = tv1;
 #endif
 
@@ -375,7 +291,6 @@ static void idle (void)
 }
 
 /**********************************************************************/
-#endif
 
 /**********************************************************************/
 int main (int argc, char *argv[])
@@ -385,11 +300,7 @@ int main (int argc, char *argv[])
   const GLfloat lightPosition1[] = {-5.0, 5.0, 1.0, 0.0};
   GLdouble tend, tol, hstart;
   int ifail, neq, method, erras, lenwrk;
-#ifdef OLD
-  vec3 thres;
-#else
   vec6 thres;
-#endif
   char task;
 
   box[X] = 1.0;
@@ -399,16 +310,6 @@ int main (int argc, char *argv[])
   I[X] = mass * (box[Y] * box[Y] + box[Z] * box[Z]) / 3.0;
   I[Y] = mass * (box[X] * box[X] + box[Z] * box[Z]) / 3.0;
   I[Z] = mass * (box[X] * box[X] + box[Y] * box[Y]) / 3.0;
-#ifdef OLD
-  /*
-  w0[X] = 0.0001;
-  w0[Y] = 1.0;
-  w0[Z] = 0.0001;
-  */
-  w0[X] = 0.0001;
-  w0[Y] = -1.0;
-  w0[Z] = 0.0001;
-#else
 /*
         [0]  [1]  [2]  [3]   [4]     [5]
    y    wx   wy   wz   phi   theta   psi
@@ -428,7 +329,7 @@ int main (int argc, char *argv[])
   y[3] = 0.0;
   y[4] = 0.00000001;
   y[5] = 0.0;
-#endif
+
   t = 0.0;
 
   neq = NEQ;
@@ -442,11 +343,7 @@ int main (int argc, char *argv[])
   hstart = 0.0;
   lenwrk = NEQ * 32;
   ifail = 0;
-#ifdef OLD
-  rksuite.setup(neq, t, w0, tend, tol, thres, method, &task, (bool)erras, hstart, (bool)ifail);
-#else
   rksuite.setup(neq, t, y, tend, tol, thres, method, &task, (bool)erras, hstart, (bool)ifail);
-#endif
 
 #ifdef SAVEFILES
   tv0.tv_sec = 0;
@@ -479,13 +376,6 @@ int main (int argc, char *argv[])
   glEnable (GL_LIGHT0);
   glEnable (GL_COLOR_MATERIAL);
   glEnable (GL_CULL_FACE);
-
-#ifdef OLD
-  /* initialise mouse rotation matrix to the identity matrix */
-  glMatrixMode (GL_MODELVIEW);
-  glLoadIdentity ();
-  glGetDoublev (GL_MODELVIEW_MATRIX, rotationMatrix);
-#endif
 
   /* compile displayLists */
   displayListBase = glGenLists (2);
