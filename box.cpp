@@ -15,6 +15,8 @@ http://homepages.paradise.n­et.nz/tmcgavin/box.c
 #include <GL/freeglut_std.h>
 #include <rksuite.h>
 
+#include <unistd.h>
+
 #ifdef __GCC__
 #define NORETURN __attribute__ ((noreturn))
 #else
@@ -261,7 +263,7 @@ static void idle (void)
 #else
   gettimeofday (&tv1, NULL);
   timersub (&tv1, &tv0, &dtv);
-  dt = 100.0 * 0.00000001 * dtv.tv_usec;
+  dt = 1.0 * 0.000001 * dtv.tv_usec;
   tv0 = tv1;
 #endif
 
@@ -286,7 +288,7 @@ static void idle (void)
     I[Z] * I[Z] * y[2] * y[2];
 
   printf ("%f (%17.15f %17.15f %17.15f) (%f %f %f) %f %f\n", t, y[0], y[1], y[2], y[3], y[4], y[5], c1, c2);
-
+  usleep(100000);
   display ();
 }
 
@@ -323,7 +325,7 @@ int main (int argc, char *argv[])
   y[4] = 0.00000001;
   y[5] = 0.0;
 */
-  y[0] = 0.0001;
+  y[0] = 0.001;
   y[1] = 1.0;
   y[2] = 0.0001;
   y[3] = 0.0;

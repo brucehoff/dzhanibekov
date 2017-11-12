@@ -18,6 +18,8 @@ RUN gcc -shared -o librksuite.so rksuite.o
 RUN cp librksuite.so /usr/lib/
 RUN cp rksuite.h /usr/include
 
+ENV HOME /
+
 COPY . /usr/src/box
 WORKDIR /usr/src/box
 RUN gcc -o box box.cpp -DUNIX -O2 -w -Wall -s -lglut -lGLU -lGL -L/usr/X11R6/lib -lXi -lXmu -lX11 -lm -lrksuite -lstdc++ 
